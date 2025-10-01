@@ -243,7 +243,7 @@ class StatisticsPage extends StatelessWidget {
           height: 300,
           child: Column(
             children: [
-              // Chart
+              // Char
               Expanded(
                 child: CustomPaint(
                   size: const Size(200, 200),
