@@ -1,11 +1,15 @@
 import 'package:get/get.dart';
 import 'package:aptimaster/feature/home/model/aptitude_model.dart';
+import 'package:aptimaster/core/models/api_models.dart';
 import 'package:aptimaster/core/services/aptitude_repository.dart';
+import 'package:aptimaster/core/services/notification_service.dart';
+// Note: ProfileController import removed as refresh methods are no longer needed
 
 class HomeController extends GetxController {
   static HomeController get to => Get.find();
 
   final AptitudeRepository _repository = AptitudeRepository();
+
   final RxList<CategoryModel> _categories = <CategoryModel>[].obs;
   final RxBool _isLoading = false.obs;
   final RxString _searchQuery = ''.obs;
@@ -21,6 +25,17 @@ class HomeController extends GetxController {
   void onInit() {
     super.onInit();
     _loadCategories();
+    _initializeNotifications();
+  }
+
+  Future<void> _initializeNotifications() async {
+    try {
+      // Initialize notifications when home screen loads
+      final notificationService = Get.find<NotificationService>();
+      await notificationService.initialize();
+    } catch (e) {
+      print('Error initializing notifications: $e');
+    }
   }
 
   Future<void> _loadCategories() async {
@@ -68,6 +83,7 @@ class HomeController extends GetxController {
       // Reload from API when search is cleared
       _loadCategories();
     } else {
+      // Filter categories based on search query
       final filteredCategories = _categories.where((category) {
         return category.name.toLowerCase().contains(
               _searchQuery.value.toLowerCase(),
@@ -112,6 +128,27 @@ class HomeController extends GetxController {
 
   void toggleViewType() {
     viewType.value = viewType.value == 'grid' ? 'list' : 'grid';
+  }
+
+  // Load subcategories for a specific category
+  Future<List<SubcategoryModel>> loadSubcategories(String categoryId) async {
+    try {
+      return await _repository.getSubcategories(categoryId);
+    } catch (e) {
+      print('Error loading subcategories: $e');
+      return [];
+    }
+  }
+
+  // Refresh test statistics (call this when returning to home after completing a test)
+  Future<void> refreshTestStatistics() async {
+    try {
+      // Note: Refresh functionality moved to TestStatisticsService
+      // Statistics are now automatically updated when tests are completed
+      print('Statistics are automatically managed by TestStatisticsService');
+    } catch (e) {
+      print('Error refreshing test statistics: $e');
+    }
   }
 
   @override

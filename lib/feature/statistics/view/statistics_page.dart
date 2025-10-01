@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:math' as math;
 
-import '../../../core/services/ad_service.dart';
 import '../../../core/widgets/app_text.dart';
+import '../../../core/widgets/banner_ad_widget.dart';
 import '../controller/statistics_controller.dart';
 import '../model/daily_progress_model.dart';
 import '../model/question_type_performance_model.dart';
@@ -86,18 +86,7 @@ class StatisticsPage extends StatelessWidget {
             ),
 
             // Banner Ad at bottom
-            Obx(() {
-              final adWidget = Get.find<AdService>().getBannerAdWidget();
-              if (adWidget != null) {
-                return Container(
-                  color: Theme.of(context).colorScheme.surface,
-                  child: SafeArea(
-                    child: adWidget,
-                  ),
-                );
-              }
-              return const SizedBox.shrink();
-            }),
+            const BannerAdContainer(pageId: 'statistics'),
           ],
         );
       }),

@@ -1,4 +1,4 @@
-package com.aptimaster.app
+package com.dhigrowth.aptimaster
 
 import io.flutter.embedding.android.FlutterActivity
 

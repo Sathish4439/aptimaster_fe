@@ -2,10 +2,10 @@ import 'package:aptimaster/feature/home/controller/home_controller.dart';
 import 'package:aptimaster/feature/home/model/aptitude_model.dart';
 import 'package:aptimaster/core/controllers/theme_controller.dart';
 import 'package:aptimaster/core/services/translation_service.dart';
-import 'package:aptimaster/core/services/ad_service.dart';
 import 'package:aptimaster/core/theme/app_colors.dart';
 import 'package:aptimaster/core/widgets/app_snackbar.dart';
 import 'package:aptimaster/core/widgets/app_text.dart';
+import 'package:aptimaster/core/widgets/banner_ad_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -150,55 +150,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             ),
 
             // Banner Ad at bottom
-            Obx(() {
-              final adService = Get.find<AdService>();
-              final adWidget = adService.getBannerAdWidget();
-              
-              if (adWidget != null) {
-                // Ad loaded successfully
-                return Container(
-                  color: Theme.of(context).colorScheme.surface,
-                  child: SafeArea(
-                    child: adWidget,
-                  ),
-                );
-              } else if (adService.isBannerLoading.value) {
-                // Ad is loading - show placeholder
-                return Container(
-                  color: Theme.of(context).colorScheme.surface,
-                  child: SafeArea(
-                    child: Container(
-                      height: 50,
-                      alignment: Alignment.center,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Loading ad...',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              } else {
-                // Ad failed to load - hide the space completely
-                return const SizedBox.shrink();
-              }
-            }),
+            const BannerAdContainer(pageId: 'home'),
           ],
         );
       }),

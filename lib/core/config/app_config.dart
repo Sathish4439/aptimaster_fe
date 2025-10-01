@@ -5,15 +5,23 @@ class AppConfig {
     defaultValue: 'development',
   );
 
+  // No runtime overrides; URLs are fixed per environment
+
   // API Configuration
-  static const String _devBaseUrl = 'http://192.168.31.86:5432/api';
-  static const String _prodBaseUrl = 'https://your-production-api.com/api';
-  static const String _testBaseUrl = 'http://192.168.31.86:5432/api';
+  static const String _devBaseUrl =
+      'https://aptimaster-be-l1xv-ay08bkujb-sathish4439s-projects.vercel.app/api';
+  static const String _prodBaseUrl =
+      'https://aptimaster-be-l1xv-ay08bkujb-sathish4439s-projects.vercel.app/api';
+  static const String _testBaseUrl =
+      'https://aptimaster-be-l1xv-ay08bkujb-sathish4439s-projects.vercel.app/api';
 
   // Image URL Configuration
-  static const String _devImageUrl = 'http://192.168.0.5:5432/uploads';
-  static const String _prodImageUrl = 'https://your-production-api.com/uploads';
-  static const String _testImageUrl = 'http://localhost:5432/uploads';
+  static const String _devImageUrl =
+      'https://aptimaster-be-l1xv-ay08bkujb-sathish4439s-projects.vercel.app/uploads';
+  static const String _prodImageUrl =
+      'https://aptimaster-be-l1xv-ay08bkujb-sathish4439s-projects.vercel.app/uploads';
+  static const String _testImageUrl =
+      'https://aptimaster-be-l1xv-ay08bkujb-sathish4439s-projects.vercel.app/uploads';
 
   // Database Configuration (for local storage if needed)
   static const String _devDbName = 'aptimaster_dev.db';
@@ -88,6 +96,8 @@ class AppConfig {
 
   // Visibility Configuration
   static const bool showSensitiveInfo = false; // Hide sensitive info in logs
-  static const bool showApiUrls = environment == 'development'; // Show API URLs in UI
-  static const bool showDebugInfo = environment == 'development'; // Show debug info
+  static const bool showApiUrls =
+      environment == 'development'; // Show API URLs in UI
+  static const bool showDebugInfo =
+      environment == 'development'; // Show debug info
 }

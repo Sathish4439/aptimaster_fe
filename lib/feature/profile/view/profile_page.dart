@@ -1,5 +1,5 @@
 import 'package:aptimaster/core/services/api_endpoints.dart';
-import 'package:aptimaster/core/services/ad_service.dart';
+import 'package:aptimaster/core/widgets/banner_ad_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:aptimaster/feature/profile/controller/profile_controller.dart';
@@ -73,18 +73,7 @@ class ProfilePage extends StatelessWidget {
             ),
 
             // Banner Ad at bottom
-            Obx(() {
-              final adWidget = Get.find<AdService>().getBannerAdWidget();
-              if (adWidget != null) {
-                return Container(
-                  color: theme.colorScheme.surface,
-                  child: SafeArea(
-                    child: adWidget,
-                  ),
-                );
-              }
-              return const SizedBox.shrink();
-            }),
+            const BannerAdContainer(pageId: 'profile'),
           ],
         );
       }),

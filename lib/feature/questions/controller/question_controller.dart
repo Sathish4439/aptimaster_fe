@@ -100,11 +100,11 @@ class QuestionModelController extends GetxController {
   bool get hasPreviousQuestionModel => _currentQuestionModelIndex.value > 0;
   bool get isQuizComplete {
     return _currentQuestionModelIndex.value >= _questions.length ||
-        _testCompleted;
+        _testCompleted.value;
   }
 
-  // Test completion statistics
-  bool _testCompleted = false;
+  // Test completion statistics (reactive to trigger UI updates)
+  final RxBool _testCompleted = false.obs;
 
   // Current test session data
   String? _currentSubcategoryId;
@@ -129,8 +129,7 @@ class QuestionModelController extends GetxController {
     try {
       final userId = await _storageService.getUserId();
       _currentUserId.value = userId;
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 
   void _resetQuiz() {
@@ -177,10 +176,8 @@ class QuestionModelController extends GetxController {
         limit: limit,
       );
 
-
       _questions.value = questions;
       _totalQuestionModels.value = questions.length;
-
 
       if (questions.isEmpty) {
         _errorMessage.value = 'No questions available for this subcategory';
@@ -264,14 +261,12 @@ class QuestionModelController extends GetxController {
       );
 
       if (success) {
-
         // For essay questions, we don't have multiple choice scoring
         // So we'll mark it as "completed" and let manual review decide score
         _score.value +=
             currentQuestionModel!.points; // Award points for completion
         _correctAnswers.value++;
-      } else {
-      }
+      } else {}
 
       // Track question timing
       _trackQuestionTiming();
@@ -708,18 +703,16 @@ class QuestionModelController extends GetxController {
   Future<void> completeTest(bool isLearningMode) async {
     try {
       // Prevent double counting if test already completed
-      if (_testCompleted) return;
-
+      if (_testCompleted.value) return;
 
       // Only track statistics for test mode (not learning mode)
       if (isLearningMode) {
-        _testCompleted = true;
+        _testCompleted.value = true;
         return;
       }
 
       // Mark test end time
       _testEndTime = DateTime.now();
-
 
       // Save detailed test completion data to backend
       if (_currentSubcategoryId != null && _currentSubcategoryName != null) {
@@ -759,17 +752,17 @@ class QuestionModelController extends GetxController {
         }
 
         // Always mark test as completed to show congratulations screen
-        _testCompleted = true;
+        _testCompleted.value = true;
         print('✅ _testCompleted set to true');
       } else {
         print('❌ Missing subcategory information for test completion');
-        _testCompleted = true; // Still show congratulations screen
+        _testCompleted.value = true; // Still show congratulations screen
         print('✅ _testCompleted set to true (missing subcategory)');
       }
     } catch (e) {
       print('❌ Error updating test statistics: $e');
       // Even if there's an error, show congratulations screen
-      _testCompleted = true;
+      _testCompleted.value = true;
       print('✅ _testCompleted set to true (exception case)');
     }
   }
@@ -794,7 +787,7 @@ class QuestionModelController extends GetxController {
 
     // Reset all state
     _resetQuiz();
-    _testCompleted = false;
+    _testCompleted.value = false;
 
     // Clear essay controller
     essayTextController.dispose();

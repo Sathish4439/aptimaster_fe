@@ -8,21 +8,18 @@ import 'package:aptimaster/core/config/ad_config.dart';
 class AdService extends GetxController {
   static AdService get to => Get.find();
 
-  // Ad instances
-  BannerAd? _bannerAd;
+  // Ad instances - Multiple banner ads for different pages
+  final Map<String, BannerAd> _bannerAds = {};
   InterstitialAd? _interstitialAd;
   RewardedAd? _rewardedAd;
 
-  // Cached AdWidget to prevent "already in widget tree" error
-  Widget? _cachedBannerWidget;
-
-  // Ad loaded states
-  final RxBool isBannerLoaded = false.obs;
+  // Ad loaded states - Track each banner ad separately
+  final RxMap<String, bool> bannerAdsLoaded = <String, bool>{}.obs;
   final RxBool isInterstitialLoaded = false.obs;
   final RxBool isRewardedLoaded = false.obs;
 
-  // Ad loading states
-  final RxBool isBannerLoading = false.obs;
+  // Ad loading states - Track each banner ad separately
+  final RxMap<String, bool> bannerAdsLoading = <String, bool>{}.obs;
   final RxBool isInterstitialLoading = false.obs;
   final RxBool isRewardedLoading = false.obs;
 
@@ -38,15 +35,33 @@ class AdService extends GetxController {
   Future<void> initializeAds() async {
     try {
       print('🎯 Initializing Google AdMob...');
-      print('📋 Ad Mode: ${AdConfig.useTesting ? "TEST ADS (Development)" : "REAL ADS (Production)"}');
-      print('⚙️  Banner Ads: ${AdConfig.showBannerAds ? "Enabled" : "Disabled"}');
-      print('⚙️  Interstitial Ads: ${AdConfig.showInterstitialAds ? "Enabled" : "Disabled"}');
-      print('⚙️  Rewarded Ads: ${AdConfig.showRewardedAds ? "Enabled" : "Disabled"}');
+      print(
+        '📋 Ad Mode: ${AdConfig.useTesting ? "TEST ADS (Development)" : "REAL ADS (Production)"}',
+      );
+      print(
+        '⚙️  Banner Ads: ${AdConfig.showBannerAds ? "Enabled" : "Disabled"}',
+      );
+      print(
+        '⚙️  Interstitial Ads: ${AdConfig.showInterstitialAds ? "Enabled" : "Disabled"}',
+      );
+      print(
+        '⚙️  Rewarded Ads: ${AdConfig.showRewardedAds ? "Enabled" : "Disabled"}',
+      );
+
+      // Register test device IDs to reduce "No fill" during development
+      if (AdConfig.useTesting) {
+        await MobileAds.instance.updateRequestConfiguration(
+          RequestConfiguration(
+            testDeviceIds: const ['239DB99DA7DFDC458DA87EAAD8A0CCA0'],
+          ),
+        );
+        print('🧪 Test device IDs registered');
+      }
+
       await MobileAds.instance.initialize();
       print('✅ AdMob initialized successfully');
 
-      // Load initial ads
-      if (AdConfig.showBannerAds) loadBannerAd();
+      // Don't load ads automatically - each page will load its own
       if (AdConfig.showInterstitialAds) loadInterstitialAd();
       if (AdConfig.showRewardedAds) loadRewardedAd();
     } catch (e) {
@@ -55,77 +70,76 @@ class AdService extends GetxController {
   }
 
   // ============================================
-  // BANNER AD METHODS
+  // BANNER AD METHODS - Multiple ads per page
   // ============================================
 
-  /// Load a banner ad
-  void loadBannerAd() {
-    if (!AdConfig.showBannerAds || isBannerLoading.value) return;
+  /// Load a banner ad for a specific page
+  void loadBannerAdForPage(String pageId) {
+    if (!AdConfig.showBannerAds || (bannerAdsLoading[pageId] ?? false)) return;
 
-    isBannerLoading.value = true;
-    print('📱 Loading banner ad...');
+    bannerAdsLoading[pageId] = true;
+    print('📱 Loading banner ad for page: $pageId...');
 
-    _bannerAd = BannerAd(
+    final bannerAd = BannerAd(
       adUnitId: AdConfig.bannerAdUnitId,
       size: AdSize.banner,
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (ad) {
-          print('✅ Banner ad loaded successfully');
-          isBannerLoaded.value = true;
-          isBannerLoading.value = false;
-          // Create and cache the AdWidget
-          final bannerAd = ad as BannerAd;
-          _cachedBannerWidget = Container(
-            alignment: Alignment.center,
-            width: bannerAd.size.width.toDouble(),
-            height: bannerAd.size.height.toDouble(),
-            child: AdWidget(ad: bannerAd),
-          );
+          print('✅ Banner ad loaded for page: $pageId');
+          _bannerAds[pageId] = ad as BannerAd;
+          bannerAdsLoaded[pageId] = true;
+          bannerAdsLoading[pageId] = false;
         },
         onAdFailedToLoad: (ad, error) {
           if (AdConfig.showAdErrorLogs) {
-            print('❌ Banner ad failed to load: ${AdConfig.getErrorMessage(error.code)}');
-            print('   Error details: $error');
+            print(
+              '❌ Banner ad failed for $pageId: ${AdConfig.getErrorMessage(error.code)}',
+            );
           }
           ad.dispose();
-          isBannerLoaded.value = false;
-          isBannerLoading.value = false;
-          _cachedBannerWidget = null; // Clear cached widget
+          bannerAdsLoaded[pageId] = false;
+          bannerAdsLoading[pageId] = false;
 
-          // Retry after configured delay
+          // Retry after delay
           Future.delayed(Duration(seconds: AdConfig.adRetryDelaySeconds), () {
-            if (!isBannerLoaded.value) {
-              loadBannerAd();
+            if (!(bannerAdsLoaded[pageId] ?? false)) {
+              loadBannerAdForPage(pageId);
             }
           });
         },
-        onAdOpened: (ad) {
-          print('📱 Banner ad opened');
-        },
-        onAdClosed: (ad) {
-          print('📱 Banner ad closed');
-        },
+        onAdOpened: (ad) => print('📱 Banner ad opened: $pageId'),
+        onAdClosed: (ad) => print('📱 Banner ad closed: $pageId'),
       ),
     )..load();
   }
 
-  /// Get banner ad widget to display in UI
-  /// Returns cached widget to prevent "already in widget tree" error
-  Widget? getBannerAdWidget() {
-    if (_bannerAd != null && isBannerLoaded.value && _cachedBannerWidget != null) {
-      return _cachedBannerWidget;
-    }
-    return null;
+  /// Get banner ad for a specific page
+  BannerAd? getBannerAdForPage(String pageId) => _bannerAds[pageId];
+
+  /// Check if banner ad is loaded for a page
+  bool isBannerLoadedForPage(String pageId) => bannerAdsLoaded[pageId] ?? false;
+
+  /// Check if banner ad is loading for a page
+  bool isBannerLoadingForPage(String pageId) =>
+      bannerAdsLoading[pageId] ?? false;
+
+  /// Dispose banner ad for a specific page
+  void disposeBannerAdForPage(String pageId) {
+    _bannerAds[pageId]?.dispose();
+    _bannerAds.remove(pageId);
+    bannerAdsLoaded.remove(pageId);
+    bannerAdsLoading.remove(pageId);
   }
 
-  /// Dispose banner ad
-  void disposeBannerAd() {
-    _bannerAd?.dispose();
-    _bannerAd = null;
-    _cachedBannerWidget = null; // Clear cached widget
-    isBannerLoaded.value = false;
-    isBannerLoading.value = false;
+  /// Dispose all banner ads
+  void disposeAllBannerAds() {
+    for (var ad in _bannerAds.values) {
+      ad.dispose();
+    }
+    _bannerAds.clear();
+    bannerAdsLoaded.clear();
+    bannerAdsLoading.clear();
   }
 
   // ============================================
@@ -152,27 +166,29 @@ class AdService extends GetxController {
           // Set full screen content callback
           _interstitialAd!.fullScreenContentCallback =
               FullScreenContentCallback(
-            onAdShowedFullScreenContent: (ad) {
-              print('🎬 Interstitial ad showed full screen');
-            },
-            onAdDismissedFullScreenContent: (ad) {
-              print('🎬 Interstitial ad dismissed');
-              ad.dispose();
-              isInterstitialLoaded.value = false;
-              // Load next interstitial ad
-              loadInterstitialAd();
-            },
-            onAdFailedToShowFullScreenContent: (ad, error) {
-              print('❌ Interstitial ad failed to show: $error');
-              ad.dispose();
-              isInterstitialLoaded.value = false;
-              loadInterstitialAd();
-            },
-          );
+                onAdShowedFullScreenContent: (ad) {
+                  print('🎬 Interstitial ad showed full screen');
+                },
+                onAdDismissedFullScreenContent: (ad) {
+                  print('🎬 Interstitial ad dismissed');
+                  ad.dispose();
+                  isInterstitialLoaded.value = false;
+                  // Load next interstitial ad
+                  loadInterstitialAd();
+                },
+                onAdFailedToShowFullScreenContent: (ad, error) {
+                  print('❌ Interstitial ad failed to show: $error');
+                  ad.dispose();
+                  isInterstitialLoaded.value = false;
+                  loadInterstitialAd();
+                },
+              );
         },
         onAdFailedToLoad: (error) {
           if (AdConfig.showAdErrorLogs) {
-            print('❌ Interstitial ad failed to load: ${AdConfig.getErrorMessage(error.code)}');
+            print(
+              '❌ Interstitial ad failed to load: ${AdConfig.getErrorMessage(error.code)}',
+            );
             print('   Error details: $error');
           }
           isInterstitialLoaded.value = false;
@@ -255,7 +271,9 @@ class AdService extends GetxController {
         },
         onAdFailedToLoad: (error) {
           if (AdConfig.showAdErrorLogs) {
-            print('❌ Rewarded ad failed to load: ${AdConfig.getErrorMessage(error.code)}');
+            print(
+              '❌ Rewarded ad failed to load: ${AdConfig.getErrorMessage(error.code)}',
+            );
             print('   Error details: $error');
           }
           isRewardedLoaded.value = false;
@@ -328,7 +346,7 @@ class AdService extends GetxController {
   @override
   void onClose() {
     print('🧹 Disposing all ads...');
-    _bannerAd?.dispose();
+    disposeAllBannerAds();
     _interstitialAd?.dispose();
     _rewardedAd?.dispose();
     super.onClose();

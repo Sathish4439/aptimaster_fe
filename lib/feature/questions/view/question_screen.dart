@@ -122,8 +122,9 @@ class _QuestionScreenState extends State<QuestionScreen> {
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
         elevation: 0,
         actions: [
-          Obx(
-            () => questionController.isLoading
+          Obx(() {
+            final loading = questionController.isLoading;
+            return loading
                 ? const SizedBox(
                     width: 20,
                     height: 20,
@@ -137,24 +138,29 @@ class _QuestionScreenState extends State<QuestionScreen> {
                     onPressed: () => questionController.loadQuestionModels(
                       widget.subcategoryId,
                     ),
-                  ),
-          ),
+                  );
+          }),
         ],
       ),
       body: Obx(() {
-        if (questionController.isLoading) {
+        final loading = questionController.isLoading;
+        final hasError = questionController.errorMessage.isNotEmpty;
+        final isEmpty = questionController.questions.isEmpty;
+        final completed = questionController.isQuizComplete;
+
+        if (loading) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (questionController.errorMessage.isNotEmpty) {
+        if (hasError) {
           return _buildErrorWidget();
         }
 
-        if (questionController.questions.isEmpty) {
+        if (isEmpty) {
           return _buildEmptyWidget();
         }
 
-        if (questionController.isQuizComplete) {
+        if (completed) {
           print(
             '🎉 UI: QuizComplete detected, showing congratulations screen!',
           );

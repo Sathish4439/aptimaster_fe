@@ -2,8 +2,8 @@ import 'package:aptimaster/feature/home/model/aptitude_model.dart';
 import 'package:aptimaster/core/models/api_models.dart';
 import 'package:aptimaster/feature/home/controller/subcategory_controller.dart';
 import 'package:aptimaster/feature/questions/view/question_screen.dart';
-import 'package:aptimaster/core/services/ad_service.dart';
 import 'package:aptimaster/core/widgets/app_text.dart';
+import 'package:aptimaster/core/widgets/banner_ad_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -53,7 +53,17 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
           ),
         ],
       ),
-      body: Obx(() => _buildBody()),
+      body: Obx(() {
+        return Column(
+          children: [
+            Expanded(
+              child: _buildBody(),
+            ),
+            // Banner Ad at bottom
+            const BannerAdContainer(pageId: 'subcategories'),
+          ],
+        );
+      }),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showAllFormulasSheet,
         icon: const Icon(Icons.functions),
@@ -125,36 +135,16 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
       );
     }
 
-    return Column(
-      children: [
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: _loadSubcategories,
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _controller.subcategories.length,
-              itemBuilder: (context, index) {
-                final subcategory = _controller.subcategories[index];
-                return _buildSubcategoryCard(subcategory);
-              },
-            ),
-          ),
-        ),
-
-        // Banner Ad at bottom
-        Obx(() {
-          final adWidget = Get.find<AdService>().getBannerAdWidget();
-          if (adWidget != null) {
-            return Container(
-              color: Theme.of(context).colorScheme.surface,
-              child: SafeArea(
-                child: adWidget,
-              ),
-            );
-          }
-          return const SizedBox.shrink();
-        }),
-      ],
+    return RefreshIndicator(
+      onRefresh: _loadSubcategories,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _controller.subcategories.length,
+        itemBuilder: (context, index) {
+          final subcategory = _controller.subcategories[index];
+          return _buildSubcategoryCard(subcategory);
+        },
+      ),
     );
   }
 

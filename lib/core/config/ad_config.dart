@@ -4,7 +4,7 @@ import 'dart:io';
 /// Contains Ad Unit IDs for different platforms and ad types
 class AdConfig {
   // Set to false when you have real Ad IDs from AdMob
-  static const bool useTesting = false; // Using real ads now
+  static const bool useTesting = true; // Using real ads now
 
   // ============================================
   // ANDROID AD UNIT IDs
