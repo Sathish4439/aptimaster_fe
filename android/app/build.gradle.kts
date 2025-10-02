@@ -44,14 +44,19 @@ android {
         versionName = flutter.versionName
     }
 
-    signingConfigs {
+   signingConfigs {
     create("release") {
-        storeFile = file(System.getenv("KEYSTORE_PATH") ?: keystoreProperties["storeFile"] as String)
-        storePassword = System.getenv("KEYSTORE_PASSWORD") ?: keystoreProperties["storePassword"] as String
-        keyAlias = System.getenv("KEY_ALIAS") ?: keystoreProperties["keyAlias"] as String
-        keyPassword = System.getenv("KEY_PASSWORD") ?: keystoreProperties["keyPassword"] as String
+        val storeFilePath = System.getenv("KEYSTORE_PATH") ?: keystoreProperties["storeFile"]?.toString()
+        if (storeFilePath != null) {
+            storeFile = file(storeFilePath)
+        }
+        storePassword = System.getenv("KEYSTORE_PASSWORD") ?: keystoreProperties["storePassword"]?.toString()
+        keyAlias = System.getenv("KEY_ALIAS") ?: keystoreProperties["keyAlias"]?.toString()
+        keyPassword = System.getenv("KEY_PASSWORD") ?: keystoreProperties["keyPassword"]?.toString()
     }
 }
+
+
 
 
     buildTypes {
