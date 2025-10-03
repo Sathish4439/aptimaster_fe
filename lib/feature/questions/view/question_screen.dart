@@ -1,6 +1,4 @@
 import 'package:aptimaster/core/services/api_endpoints.dart';
-import 'package:aptimaster/core/services/ad_service.dart';
-import 'package:aptimaster/core/utils/ad_manager.dart';
 import 'package:aptimaster/feature/questions/model/qustion_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -1235,16 +1233,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
               if (questionController.hasNextQuestionModel) {
                 // Normal next question behavior (only after explanation is shown)
                 if (questionController.showExplanation) {
-                  // Check if we should show interstitial ad
-                  if (AdManager.shouldShowInterstitial()) {
-                    Get.find<AdService>().showInterstitialAd(
-                      onAdClosed: () {
-                        questionController.nextQuestionModel();
-                      },
-                    );
-                  } else {
-                    questionController.nextQuestionModel();
-                  }
+                  questionController.nextQuestionModel();
                 }
               } else {
                 // Last question - auto-submit and show congratulations
@@ -1259,12 +1248,8 @@ class _QuestionScreenState extends State<QuestionScreen> {
                   }
                 }
 
-                // Show congratulations with interstitial ad
-                Get.find<AdService>().showInterstitialAd(
-                  onAdClosed: () {
-                    questionController.completeTest(widget.isLearningMode);
-                  },
-                );
+                // Show congratulations
+                questionController.completeTest(widget.isLearningMode);
               }
             },
             icon: const Icon(Icons.arrow_forward),

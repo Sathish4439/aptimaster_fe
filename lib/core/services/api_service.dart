@@ -10,6 +10,16 @@ class ApiService {
 
   late Dio _dio;
 
+  // Configuration constants
+
+  static const Duration connectTimeout = Duration(seconds: 30);
+  static const Duration receiveTimeout = Duration(seconds: 30);
+  static const Duration sendTimeout = Duration(seconds: 30);
+  static const Map<String, String> defaultHeaders = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
+
   void init() {
     _initializeDio();
   }
@@ -26,16 +36,19 @@ class ApiService {
 
   void _initializeDio() {
     // Debug: Print the base URL being used
-    developer.log('🔧 Initializing Dio with baseUrl: ${NetworkConfig.baseUrl}', name: 'ApiService');
+    developer.log(
+      '🔧 Initializing Dio with baseUrl: ${NetworkConfig.baseUrl}',
+      name: 'ApiService',
+    );
     print('📡 API Service - Base URL: ${NetworkConfig.baseUrl}');
 
     _dio = Dio(
       BaseOptions(
         baseUrl: NetworkConfig.baseUrl,
-        connectTimeout: NetworkConfig.connectTimeout,
-        receiveTimeout: NetworkConfig.receiveTimeout,
-        sendTimeout: NetworkConfig.sendTimeout,
-        headers: NetworkConfig.defaultHeaders,
+        connectTimeout: connectTimeout,
+        receiveTimeout: receiveTimeout,
+        sendTimeout: sendTimeout,
+        headers: defaultHeaders,
       ),
     );
 
@@ -61,7 +74,9 @@ class ApiService {
             '📥 RESPONSE: ${response.statusCode} ${response.requestOptions.path}',
             name: 'ApiService',
           );
-          print('📥 ${response.statusCode} ${response.requestOptions.method} ${response.requestOptions.path}');
+          print(
+            '📥 ${response.statusCode} ${response.requestOptions.method} ${response.requestOptions.path}',
+          );
           print('   Response: ${response.data}');
           handler.next(response);
         },
@@ -251,10 +266,17 @@ class ApiService {
         print('✅ User created successfully: $userId');
         return userId;
       }
-      developer.log('⚠️ User creation failed: ${response.statusCode}', name: 'ApiService');
+      developer.log(
+        '⚠️ User creation failed: ${response.statusCode}',
+        name: 'ApiService',
+      );
       return null;
     } catch (e) {
-      developer.log('❌ Error creating user with FCM token', name: 'ApiService', error: e);
+      developer.log(
+        '❌ Error creating user with FCM token',
+        name: 'ApiService',
+        error: e,
+      );
       print('❌ Error creating user: $e');
       return null;
     }
@@ -262,7 +284,10 @@ class ApiService {
 
   Future<bool> updateFCMToken(String userId, String fcmToken) async {
     try {
-      developer.log('🔔 Updating FCM token for user: $userId', name: 'ApiService');
+      developer.log(
+        '🔔 Updating FCM token for user: $userId',
+        name: 'ApiService',
+      );
       print('🔔 Updating FCM token for user: $userId');
       final response = await put(
         '/users/$userId/fcm-token',
@@ -277,7 +302,10 @@ class ApiService {
         developer.log('✅ FCM token updated successfully', name: 'ApiService');
         print('✅ FCM token updated successfully');
       } else {
-        developer.log('⚠️ FCM token update failed: ${response.statusCode}', name: 'ApiService');
+        developer.log(
+          '⚠️ FCM token update failed: ${response.statusCode}',
+          name: 'ApiService',
+        );
         print('⚠️ FCM token update failed: ${response.statusCode}');
       }
       return success;
@@ -293,7 +321,10 @@ class ApiService {
     File imageFile,
   ) async {
     try {
-      developer.log('📸 Uploading avatar for user: $userId', name: 'ApiService');
+      developer.log(
+        '📸 Uploading avatar for user: $userId',
+        name: 'ApiService',
+      );
       print('📸 Uploading avatar: ${imageFile.path}');
       final formData = FormData.fromMap({
         'avatar': await MultipartFile.fromFile(
@@ -313,7 +344,10 @@ class ApiService {
         print('✅ Avatar uploaded successfully');
         return response.data;
       }
-      developer.log('⚠️ Avatar upload failed: ${response.statusCode}', name: 'ApiService');
+      developer.log(
+        '⚠️ Avatar upload failed: ${response.statusCode}',
+        name: 'ApiService',
+      );
       print('⚠️ Avatar upload failed: ${response.statusCode}');
       return null;
     } catch (e) {
@@ -332,7 +366,7 @@ class ApiService {
     );
     print('🚨 DioException Type: ${error.type}');
     print('   Message: ${error.message}');
-    
+
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:

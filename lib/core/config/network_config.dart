@@ -1,13 +1,11 @@
-import 'environment_config.dart';
-
 class NetworkConfig {
-  // Get base URL from environment configuration
-  static String get baseUrl => EnvironmentConfig.apiBaseUrl;
+  // Base URL
+  static const String baseUrl = "https://aptimaster-be-l1xv-ay08bkujb-sathish4439s-projects.vercel.app/api";
 
   // API Timeout configurations
-  static Duration get connectTimeout => EnvironmentConfig.timeoutDuration;
-  static Duration get receiveTimeout => EnvironmentConfig.timeoutDuration;
-  static Duration get sendTimeout => EnvironmentConfig.timeoutDuration;
+  static const Duration connectTimeout = Duration(seconds: 30);
+  static const Duration receiveTimeout = Duration(seconds: 30);
+  static const Duration sendTimeout = Duration(seconds: 30);
 
   // Retry configurations
   static const int maxRetries = 3;
@@ -19,20 +17,20 @@ class NetworkConfig {
     'Accept': 'application/json',
   };
 
-  // Enable/disable logging based on environment
-  static bool get enableLogging => EnvironmentConfig.enableLogging;
+  // Enable/disable logging
+  static const bool enableLogging = false;
 
   // Enable/disable SSL verification
-  static bool get verifySSL => EnvironmentConfig.verifySSL;
+  static const bool verifySSL = true;
 
-  // Get current environment name
-  static String get environmentName => EnvironmentConfig.environmentName;
+  // Environment name
+  static const String environmentName = "production";
 
   // Check if running in development
-  static bool get isDevelopment => EnvironmentConfig.current.enableDebugMode;
+  static const bool isDevelopment = false;
 
   // Check if running in production
-  static bool get isProduction => !EnvironmentConfig.current.enableDebugMode;
+  static const bool isProduction = true;
 }
 
 // Network constants

@@ -1,118 +1,112 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:aptimaster/core/services/ad_service.dart';
+import '../services/admob_service.dart';
 
-/// Reusable banner ad widget that can be used across multiple pages
-/// Each page gets its own banner ad instance to avoid conflicts
-class BannerAdContainer extends StatefulWidget {
-  final String pageId; // Unique identifier for each page
-  
-  const BannerAdContainer({
+/// Reusable Banner Ad Widget
+/// This widget automatically loads and displays a banner ad
+class BannerAdWidget extends StatefulWidget {
+  final AdSize adSize;
+  final EdgeInsets? margin;
+  final Color? backgroundColor;
+
+  const BannerAdWidget({
     super.key,
-    required this.pageId,
+    this.adSize = AdSize.banner,
+    this.margin,
+    this.backgroundColor,
   });
 
   @override
-  State<BannerAdContainer> createState() => _BannerAdContainerState();
+  State<BannerAdWidget> createState() => _BannerAdWidgetState();
 }
 
-class _BannerAdContainerState extends State<BannerAdContainer> {
+class _BannerAdWidgetState extends State<BannerAdWidget> {
+  BannerAd? _bannerAd;
+  bool _isAdLoaded = false;
+  bool _isAdFailed = false;
+
   @override
   void initState() {
     super.initState();
-    // Load banner ad for this specific page
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        try {
-          final adService = Get.find<AdService>();
-          adService.loadBannerAdForPage(widget.pageId);
-        } catch (e) {
-          print('Error loading ad: $e');
-        }
-      }
-    });
+    _loadAd();
   }
 
-  @override
-  void dispose() {
-    // Dispose banner ad when page is disposed
-    try {
-      if (Get.isRegistered<AdService>()) {
-        final adService = Get.find<AdService>();
-        adService.disposeBannerAdForPage(widget.pageId);
+  void _loadAd() {
+    // Ensure AdMob is initialized before loading ads
+    AdMobService.instance.ensureInitialized().then((isInitialized) {
+      if (!isInitialized) {
+        print('❌ AdMob initialization failed');
+        if (mounted) {
+          setState(() => _isAdFailed = true);
+        }
+        return;
       }
-    } catch (e) {
-      print('Error disposing ad: $e');
-    }
-    super.dispose();
+
+      if (!mounted) return;
+
+      print(
+        '🔄 Loading banner ad with unit ID: ${AdMobService.instance.bannerAdUnitId}',
+      );
+
+      _bannerAd = AdMobService.instance.createBannerAd(
+        adSize: widget.adSize,
+        onAdLoaded: (ad) {
+          print('✅ Banner ad loaded successfully');
+          if (mounted) {
+            setState(() {
+              _isAdLoaded = true;
+              _isAdFailed = false;
+            });
+          }
+        },
+        onAdFailedToLoad: (ad, error) {
+          print('❌ Banner ad failed to load: $error');
+          if (mounted) {
+            setState(() {
+              _isAdLoaded = false;
+              _isAdFailed = true;
+            });
+          }
+          ad.dispose();
+
+          // For production ads, don't retry automatically
+          // User can manually retry by tapping the retry button
+        },
+      );
+
+      _bannerAd?.load();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!Get.isRegistered<AdService>()) {
+    // Don't show anything if ad failed to load (clean UI)
+    if (_isAdFailed) {
       return const SizedBox.shrink();
     }
 
-    return Obx(() {
-      try {
-        final adService = Get.find<AdService>();
-        final bannerAd = adService.getBannerAdForPage(widget.pageId);
-        final isLoaded = adService.isBannerLoadedForPage(widget.pageId);
-        final isLoading = adService.isBannerLoadingForPage(widget.pageId);
+    // Show loading indicator while ad is loading
+    if (!_isAdLoaded) {
+      return Container(
+        margin: widget.margin,
+        height: widget.adSize.height.toDouble(),
+        color: widget.backgroundColor ?? Colors.transparent,
+        child: const Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      );
+    }
 
-        if (bannerAd != null && isLoaded) {
-          // Ad loaded successfully
-          return Container(
-            color: Theme.of(context).colorScheme.surface,
-            child: SafeArea(
-              child: Container(
-                alignment: Alignment.center,
-                width: bannerAd.size.width.toDouble(),
-                height: bannerAd.size.height.toDouble(),
-                child: AdWidget(ad: bannerAd),
-              ),
-            ),
-          );
-        } else if (isLoading) {
-          // Ad is loading - show placeholder
-          return Container(
-            color: Theme.of(context).colorScheme.surface,
-            child: SafeArea(
-              child: Container(
-                height: 50,
-                alignment: Alignment.center,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Loading ad...',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }
-        // No ad to show
-        return const SizedBox.shrink();
-      } catch (e) {
-        print('Error building ad widget: $e');
-        return const SizedBox.shrink();
-      }
-    });
+    // Show the loaded ad
+    return Container(
+      margin: widget.margin,
+      height: widget.adSize.height.toDouble(),
+      color: widget.backgroundColor ?? Colors.transparent,
+      child: AdWidget(ad: _bannerAd!),
+    );
   }
 }

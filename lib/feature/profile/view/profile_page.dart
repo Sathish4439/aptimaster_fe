@@ -67,13 +67,17 @@ class ProfilePage extends StatelessWidget {
 
                     // Menu Items
                     _buildMenuSection(profileController, theme),
+
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
             ),
 
             // Banner Ad at bottom
-            const BannerAdContainer(pageId: 'profile'),
+            const BannerAdWidget(
+              margin: EdgeInsets.only(bottom: 8),
+            ),
           ],
         );
       }),

@@ -1,11 +1,11 @@
 import 'package:aptimaster/core/controllers/theme_controller.dart';
+import 'package:aptimaster/core/services/admob_service.dart';
+import 'package:aptimaster/core/services/admob_manager.dart';
 import 'package:aptimaster/core/services/api_service.dart';
 import 'package:aptimaster/core/services/localization_service.dart';
 import 'package:aptimaster/core/services/storage_service.dart';
 import 'package:aptimaster/core/services/notification_service.dart';
-import 'package:aptimaster/core/services/ad_service.dart';
 import 'package:aptimaster/core/theme/app_theme.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:aptimaster/feature/home/view/home_page.dart';
 import 'package:aptimaster/feature/home/view/subcategories_page.dart';
 import 'package:aptimaster/feature/language/view/language_selection_screen.dart';
@@ -39,12 +39,15 @@ void main() async {
   // Initialize services
   await StorageService.instance.init();
 
+  // Initialize AdMob
+  await AdMobService.instance.initialize();
+
+  // Initialize and preload interstitial ads
+  await AdMobManager().loadInterstitialAd();
+
   // Reset and initialize API service to ensure latest configuration
   ApiService.reset();
   ApiService().init();
-
-  // Initialize Google AdMob
-  await MobileAds.instance.initialize();
 
   runApp(const MyApp());
 }
@@ -58,7 +61,6 @@ class MyApp extends StatelessWidget {
     Get.put(ThemeController());
     Get.put(LocalizationService());
     Get.put(NotificationService());
-    Get.put(AdService()); // Initialize Ad Service
 
     return GetMaterialApp(
       title: 'AptiMaster',

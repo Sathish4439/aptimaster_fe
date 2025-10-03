@@ -64,7 +64,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '446231829823',
     projectId: 'aptimaster-384af',
     storageBucket: 'aptimaster-384af.firebasestorage.app',
-    iosBundleId: 'com.example.aptitudeFe',
+    iosBundleId: 'com.dhigrowth.aptimaster',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -73,7 +73,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '446231829823',
     projectId: 'aptimaster-384af',
     storageBucket: 'aptimaster-384af.firebasestorage.app',
-    iosBundleId: 'com.aptimaster.app',
+    iosBundleId: 'com.dhigrowth.aptimaster',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

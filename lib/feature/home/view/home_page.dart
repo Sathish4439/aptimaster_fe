@@ -2,6 +2,7 @@ import 'package:aptimaster/feature/home/controller/home_controller.dart';
 import 'package:aptimaster/feature/home/model/aptitude_model.dart';
 import 'package:aptimaster/core/controllers/theme_controller.dart';
 import 'package:aptimaster/core/services/translation_service.dart';
+import 'package:aptimaster/core/services/admob_manager.dart';
 import 'package:aptimaster/core/theme/app_colors.dart';
 import 'package:aptimaster/core/widgets/app_snackbar.dart';
 import 'package:aptimaster/core/widgets/app_text.dart';
@@ -150,7 +151,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             ),
 
             // Banner Ad at bottom
-            const BannerAdContainer(pageId: 'home'),
+            const BannerAdWidget(
+              margin: EdgeInsets.only(bottom: 8),
+            ),
           ],
         );
       }),
@@ -372,10 +375,15 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                         const SizedBox(height: 12),
                         ElevatedButton.icon(
                           onPressed: () {
-                            // Navigate to subcategories page - it will load subcategories dynamically
-                            Get.toNamed(
-                              '/subcategories',
-                              arguments: {'category': category},
+                            // Show interstitial ad before navigation
+                            AdMobManager().showInterstitialAd(
+                              onAdDismissed: () {
+                                // Navigate to subcategories page after ad (or immediately if no ad)
+                                Get.toNamed(
+                                  '/subcategories',
+                                  arguments: {'category': category},
+                                );
+                              },
                             );
                           },
                           icon: const Icon(Icons.play_arrow),
@@ -976,7 +984,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       child: GestureDetector(
         //  borderRadius: BorderRadius.circular(16),
         onTap: () {
-          Get.toNamed('/subcategories', arguments: {'category': category});
+          // Show interstitial ad before navigation
+          AdMobManager().showInterstitialAd(
+            onAdDismissed: () {
+              // Navigate to subcategories page after ad (or immediately if no ad)
+              Get.toNamed('/subcategories', arguments: {'category': category});
+            },
+          );
         },
         child: Container(
           padding: const EdgeInsets.all(16),
@@ -1126,10 +1140,15 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     ElevatedButton.icon(
                       onPressed: () {
                         Navigator.pop(context);
-                        // Navigate to subcategories page - it will load subcategories dynamically
-                        Get.toNamed(
-                          '/subcategories',
-                          arguments: {'category': category},
+                        // Show interstitial ad before navigation
+                        AdMobManager().showInterstitialAd(
+                          onAdDismissed: () {
+                            // Navigate to subcategories page after ad (or immediately if no ad)
+                            Get.toNamed(
+                              '/subcategories',
+                              arguments: {'category': category},
+                            );
+                          },
                         );
                       },
                       icon: const Icon(Icons.play_arrow),

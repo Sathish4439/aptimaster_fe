@@ -87,7 +87,6 @@ class AppConfig {
   static const bool enableCrashReporting = true;
   static const bool enablePushNotifications = true;
   static const bool enableOfflineMode = true;
-  static const bool enableAds = true; // Control ad visibility
 
   // Debug Configuration
   static const bool enableDebugLogs = environment == 'development';

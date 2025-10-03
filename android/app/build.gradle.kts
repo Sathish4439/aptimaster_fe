@@ -19,7 +19,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.aptimaster.app"
+    namespace = "com.dhigrowth.aptimaster"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -35,7 +35,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.aptimaster.app"
+        applicationId = "com.dhigrowth.aptimaster"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion  // AdMob requires minimum SDK 21

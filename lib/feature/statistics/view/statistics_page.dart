@@ -79,14 +79,16 @@ class StatisticsPage extends StatelessWidget {
                     const SizedBox(height: 16),
                     _buildDetailedTestAnalysis(context, statisticsController),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
             ),
 
             // Banner Ad at bottom
-            const BannerAdContainer(pageId: 'statistics'),
+            const BannerAdWidget(
+              margin: EdgeInsets.only(bottom: 8),
+            ),
           ],
         );
       }),

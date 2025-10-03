@@ -3,7 +3,7 @@ import 'package:aptimaster/core/models/api_models.dart';
 import 'package:aptimaster/feature/home/controller/subcategory_controller.dart';
 import 'package:aptimaster/feature/questions/view/question_screen.dart';
 import 'package:aptimaster/core/widgets/app_text.dart';
-import 'package:aptimaster/core/widgets/banner_ad_widget.dart';
+import 'package:aptimaster/core/services/admob_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -59,8 +59,6 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
             Expanded(
               child: _buildBody(),
             ),
-            // Banner Ad at bottom
-            const BannerAdContainer(pageId: 'subcategories'),
           ],
         );
       }),
@@ -291,12 +289,18 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
     SubcategoryModel subcategory, {
     required bool isLearningMode,
   }) {
-    Get.to(
-      () => QuestionScreen(
-        subcategoryId: subcategory.id,
-        subcategoryName: subcategory.name,
-        isLearningMode: isLearningMode,
-      ),
+    // Show interstitial ad before navigation
+    AdMobManager().showInterstitialAd(
+      onAdDismissed: () {
+        // Navigate to question screen after ad (or immediately if no ad)
+        Get.to(
+          () => QuestionScreen(
+            subcategoryId: subcategory.id,
+            subcategoryName: subcategory.name,
+            isLearningMode: isLearningMode,
+          ),
+        );
+      },
     );
   }
 
